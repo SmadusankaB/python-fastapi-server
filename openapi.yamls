@@ -1,0 +1,100 @@
+openapi: 3.0.0
+info:
+  description: Flask App to generate image thumbnails
+  title: TG Flask REST API
+  version: 1.0.0
+servers:
+- url: https://gist.githubusercontent.com/api/v1
+tags:
+- name: public
+paths:
+  /image:
+    post:
+      description: Submit image to generate thumbnail
+      operationId: process_image
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/process_image_request'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response_201'
+          description: If success
+      summary: Post image
+      tags:
+      - public
+      x-openapi-router-controller: project.controllers.image_controller
+  /image/{process_id}:
+    get:
+      operationId: get_image
+      parameters:
+      - description: Id of the process
+        explode: false
+        in: path
+        name: process_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            image/*:
+              schema:
+                type: string
+          description: Successfully read status by process id
+      summary: Read the status by process id
+      tags:
+      - public
+      x-openapi-router-controller: project.controllers.image_controller
+  /process:
+    get:
+      operationId: get_ids
+      responses:
+        "200":
+          description: Successfully read process id list
+      summary: Read the list of process ids
+      tags:
+      - public
+      x-openapi-router-controller: project.controllers.process_controller
+  /process/{process_id}:
+    get:
+      operationId: get_status
+      parameters:
+      - description: Id of the process
+        explode: false
+        in: path
+        name: process_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          description: Successfully read status by process id
+      summary: Read the status by process id
+      tags:
+      - public
+      x-openapi-router-controller: project.controllers.process_controller
+components:
+  schemas:
+    response_201:
+      example:
+        message: successfully created.
+      properties:
+        message:
+          example: successfully created.
+          type: string
+      title: response_201
+      type: object
+    process_image_request:
+      properties:
+        file:
+          format: binary
+          type: string
+      type: object

@@ -1,0 +1,15 @@
+./README.md
+./Dockerfile
+./uploads
+./test
+./docker/dev/nginx/Dockerfile
+./docker/dev/server/Dockerfile
+./.venv
+./openapi-generator
+./env
+.flake8
+.gitignore
+././openapi-generator-ignore
+./openapi.yaml
+./pyproject.toml
+./setup.cfg

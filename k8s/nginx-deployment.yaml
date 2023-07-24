@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: /snap/kompose/19/kompose-linux-amd64 convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: nginx
+  name: nginx-po
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: nginx
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: /snap/kompose/19/kompose-linux-amd64 convert
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: nginx
+    spec:
+      containers:
+      - image: app_nginx:0.0.1
+        imagePullPolicy: "IfNotPresent"
+        name: nginx
+        command:
+          - /nginx-entrypoint.sh
+          - nginx
+          - -g
+          - daemon off;
+        ports:
+        - containerPort: 8080
+        - containerPort: 15672
+        envFrom:
+          - configMapRef:
+              name: server-config-env
+        volumeMounts:
+        - mountPath: /app/uploads
+          name: uploadfiles
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes:
+      - name: uploadfiles
+        persistentVolumeClaim:
+          claimName: uploadfiles-pvc
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: /snap/kompose/19/kompose-linux-amd64 convert
+    kompose.version: 1.21.0 (992df58d8)
+  labels:
+    io.kompose.service: nginx
+  name: nginx-svc
+  namespace: default
+spec:
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+    nodePort: 30002
+  - name: rabit
+    port: 15672
+    targetPort: 15672
+    nodePort: 30001
+  selector:
+    io.kompose.service: nginx
+  type: NodePort

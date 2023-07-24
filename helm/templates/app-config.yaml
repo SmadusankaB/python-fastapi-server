@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "helm.fullname" . }}-server-config-env
+  labels:
+  {{- include "helm.labels" . | nindent 4 }}
+data:
+  APP_CONFIG: {{ .Values.serverConfigEnv.appConfig | quote }}
+  RABBITMQ_HOST: {{ include "helm.fullname" . }}-{{ .Values.serverConfigEnv.celeryHost }}.{{ .Release.Namespace }}.svc.cluster.local
+  RABBITMQ_PORT: {{ .Values.serverConfigEnv.celeryPort | quote }}
+  DATABASE_HOST: {{ include "helm.fullname" . }}-{{ .Values.serverConfigEnv.databaseHost }}.{{ .Release.Namespace }}.svc.cluster.local
+  DATABASE_NAME: {{ .Values.serverConfigEnv.databaseName | quote }}
+  DATABASE_PORT: {{ .Values.serverConfigEnv.databasePort | quote }}
+  LOG_LEVEL: {{ .Values.serverConfigEnv.logLevel | quote }}
+  MONGO_INITDB_DATABASE: {{ .Values.serverConfigEnv.mongoInitdbDatabase | quote }}
+  SERVER_HOST: {{ include "helm.fullname" . }}-{{ .Values.serverConfigEnv.serverHost }}.{{ .Release.Namespace }}.svc.cluster.local

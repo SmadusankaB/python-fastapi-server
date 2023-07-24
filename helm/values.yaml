@@ -1,0 +1,92 @@
+appServerPod:
+  appServer:
+    image:
+      repository: app_server
+      tag: 0.0.1
+    imagePullPolicy: IfNotPresent
+  replicas: 1
+appServerService:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: http
+  type: ClusterIP
+celeryWorker:
+  celeryWorker:
+    image:
+      repository: app_server
+      tag: 0.0.1
+    imagePullPolicy: IfNotPresent
+  replicas: 1
+dbAuth:
+  password: "mongodbuser"
+  username: "mongodbuser"
+kubernetesClusterDomain: cluster.local
+mongoPod:
+  mongoDb:
+    image:
+      repository: mongo
+      tag: latest
+    imagePullPolicy: IfNotPresent
+  replicas: 1
+mongoService:
+  ports:
+  - port: 27017
+    targetPort: 27017
+  type: ClusterIP
+nginxPo:
+  nginx:
+    image:
+      repository: app_nginx
+      tag: 0.0.1
+    imagePullPolicy: IfNotPresent
+  replicas: 1
+nginxSvc:
+  ports:
+  - name: http
+    nodePort: 30002
+    port: 8080
+    targetPort: 8080
+  - name: rabit
+    nodePort: 30001
+    port: 15672
+    targetPort: 15672
+  type: NodePort
+pvc:
+  mongoPvc:
+    storageClass: ""
+    storageRequest: 100Mi
+  uploadfilesPvc:
+    storageClass: ""
+    storageRequest: 100Mi
+rabbitmqPod:
+  rabbitmqMq:
+    image:
+      repository: rabbitmq
+      tag: 3-management
+    imagePullPolicy: IfNotPresent
+  replicas: 1
+rabbitmqService:
+  ports:
+  - name: http
+    port: 15672
+    protocol: TCP
+    targetPort: 15672
+  - name: amqp
+    port: 5672
+    protocol: TCP
+    targetPort: 5672
+  type: ClusterIP
+rabitAuth:
+  password: "guest"
+  username: "guest"
+serverConfigEnv:
+  appConfig: development
+  celeryHost: rabbitmq-service
+  celeryPort: "5672"
+  databaseHost: mongo-service
+  databaseName: celery_db
+  databasePort: "27017"
+  logLevel: DEBUG
+  mongoInitdbDatabase: admin
+  serverHost: app-server-service

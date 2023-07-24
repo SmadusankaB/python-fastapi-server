@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: server-config-env
+  namespace: default
+data:
+  APP_CONFIG: development
+  LOG_LEVEL: DEBUG
+  SERVER_HOST: app-server-service
+  DATABASE_HOST: mongo-service
+  DATABASE_PORT: "27017"
+  DATABASE_NAME: celery_db
+  MONGO_INITDB_DATABASE: admin
+  RABBITMQ_HOST: rabbitmq-service
+  RABBITMQ_PORT: "5672"

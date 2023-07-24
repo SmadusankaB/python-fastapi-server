@@ -1,0 +1,127 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-auth
+  namespace: default
+type: Opaque
+data:
+  username: bW9uZ29kYnVzZXI=
+  password: bW9uZ29kYnVzZXI=
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: /snap/kompose/19/kompose-linux-amd64 convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: mongo-db
+  name: mongo-pod
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: mongo-db
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: /snap/kompose/19/kompose-linux-amd64 convert
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: mongo-db
+    spec:
+      containers:
+      - name: mongo-db
+        image: mongo:latest
+        env:
+        - name: MONGO_INITDB_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: server-config-env
+              key: MONGO_INITDB_DATABASE
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-auth
+              key: password
+        - name: MONGO_INITDB_ROOT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: db-auth
+              key: username
+        imagePullPolicy: "IfNotPresent"
+        ports:
+        - containerPort: 27017
+        volumeMounts:
+        - mountPath: /var/lib/mongo/data/
+          name: mongo-data
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes:
+      - name: mongo-data
+        persistentVolumeClaim:
+          claimName: mongo-pvc
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: /snap/kompose/19/kompose-linux-amd64 convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: mongo-db
+  name: mongo-service
+  namespace: default
+spec:
+  ports:
+  - port: 27017
+    targetPort: 27017
+  type: ClusterIP
+  selector:
+    io.kompose.service: mongo-db
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mongo-pv
+  namespace: default
+  labels:
+    io.kompose.service: mongo-data
+spec:
+  storageClassName: ""
+  capacity:
+    storage: 100Mi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /tmp/data
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: mongo-data
+  name: mongo-pvc
+  namespace: default
+spec:
+  volumeName: mongo-pv
+  storageClassName: ""
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Mi

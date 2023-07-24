@@ -1,0 +1,89 @@
+version: "2"
+services:
+  nginx:
+    image: app_nginx:0.0.1
+    build: 
+      dockerfile: ./docker/dev/nginx/Dockerfile
+    container_name: app_nginx
+    command: 
+      - nginx
+      - -g
+      - daemon off;
+    volumes:
+      - uploadfiles:/app/uploads
+    ports:
+      - 8080:8080
+      - 15672:15672
+    environment: 
+      SERVER_HOST: ${SERVER_HOST}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+    depends_on:
+      - app_server
+      - rabbitmq_mq
+
+  app_server:
+    image: app_server:0.0.1
+    build:
+      context: .
+      dockerfile: ./docker/dev/server/Dockerfile
+    container_name: app_server
+    command: /start.sh
+    volumes:
+      - uploadfiles:/app/uploads
+    environment: 
+      APP_CONFIG: ${APP_CONFIG}
+      LOG_LEVEL: ${LOG_LEVEL}
+      DATABASE_HOST: ${DATABASE_HOST}
+      DATABASE_PORT: ${DATABASE_PORT}
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_PORT: ${RABBITMQ_PORT}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+    depends_on:
+      - mongo_db
+      - rabbitmq_mq
+
+  celery_worker:
+    image: app_server:0.0.1
+    container_name: celery_worker
+    command: /start-celeryworker.sh
+    volumes:
+      - uploadfiles:/app/uploads
+    environment: 
+      APP_CONFIG: ${APP_CONFIG}
+      LOG_LEVEL: ${LOG_LEVEL}
+      DATABASE_HOST: ${DATABASE_HOST}
+      DATABASE_PORT: ${DATABASE_PORT}
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_PORT: ${RABBITMQ_PORT}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+    depends_on:
+      - mongo_db
+      - rabbitmq_mq
+
+  mongo_db:
+    image: mongo:latest
+    volumes:
+      - mongo_data:/var/lib/mongo/data/
+    container_name: mongo_db
+    ports:
+      - 27017:27017
+    environment: 
+      MONGO_INITDB_ROOT_USERNAME: ${DATABASE_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${DATABASE_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+
+  rabbitmq_mq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq_mq
+
+volumes:
+  mongo_data:
+  uploadfiles:

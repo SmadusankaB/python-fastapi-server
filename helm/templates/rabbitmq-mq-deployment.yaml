@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "helm.fullname" . }}-rabit-auth
+  labels:
+  {{- include "helm.labels" . | nindent 4 }}
+data:
+  password: {{ required "rabitAuth.password is required" .Values.rabitAuth.password
+    | b64enc | quote }}
+  username: {{ required "rabitAuth.username is required" .Values.rabitAuth.username
+    | b64enc | quote }}
+type: Opaque
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "helm.fullname" . }}-rabbitmq-pod
+  labels:
+    io.kompose.service: rabbitmq-mq
+  {{- include "helm.labels" . | nindent 4 }}
+  annotations:
+    kompose.cmd: /snap/kompose/19/kompose-linux-amd64 convert
+    kompose.version: 1.21.0 (992df58d8)
+spec:
+  replicas: {{ .Values.rabbitmqPod.replicas }}
+  selector:
+    matchLabels:
+      io.kompose.service: rabbitmq-mq
+    {{- include "helm.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        io.kompose.service: rabbitmq-mq
+      {{- include "helm.selectorLabels" . | nindent 8 }}
+      annotations:
+        kompose.cmd: /snap/kompose/19/kompose-linux-amd64 convert
+        kompose.version: 1.21.0 (992df58d8)
+    spec:
+      containers:
+      - env:
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: {{ .Values.rabbitmqPod.rabbitmqMq.image.repository }}:{{ .Values.rabbitmqPod.rabbitmqMq.image.tag
+          | default .Chart.AppVersion }}
+        imagePullPolicy: {{ .Values.rabbitmqPod.rabbitmqMq.imagePullPolicy }}
+        name: rabbitmq-mq
+        ports:
+        - containerPort: 15672
+          name: http
+          protocol: TCP
+        - containerPort: 5672
+          name: amqp
+          protocol: TCP
+        resources: {}
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "helm.fullname" . }}-rabbitmq-service
+  labels:
+    io.kompose.service: rabbitmq-mq
+  {{- include "helm.labels" . | nindent 4 }}
+  annotations:
+    kompose.cmd: /snap/kompose/19/kompose-linux-amd64 convert
+    kompose.version: 1.21.0 (992df58d8)
+spec:
+  type: {{ .Values.rabbitmqService.type }}
+  selector:
+    io.kompose.service: rabbitmq-mq
+  {{- include "helm.selectorLabels" . | nindent 4 }}
+  ports:
+	{{- .Values.rabbitmqService.ports | toYaml | nindent 2 -}}

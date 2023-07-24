@@ -1,0 +1,90 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "helm.fullname" . }}-db-auth
+  labels:
+  {{- include "helm.labels" . | nindent 4 }}
+data:
+  password: {{ required "dbAuth.password is required" .Values.dbAuth.password | b64enc
+    | quote }}
+  username: {{ required "dbAuth.username is required" .Values.dbAuth.username | b64enc
+    | quote }}
+type: Opaque
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "helm.fullname" . }}-mongo-pod
+  labels:
+    io.kompose.service: mongo-db
+  {{- include "helm.labels" . | nindent 4 }}
+  annotations:
+    kompose.cmd: /snap/kompose/19/kompose-linux-amd64 convert
+    kompose.version: 1.21.0 (992df58d8)
+spec:
+  replicas: {{ .Values.mongoPod.replicas }}
+  selector:
+    matchLabels:
+      io.kompose.service: mongo-db
+    {{- include "helm.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        io.kompose.service: mongo-db
+      {{- include "helm.selectorLabels" . | nindent 8 }}
+      annotations:
+        kompose.cmd: /snap/kompose/19/kompose-linux-amd64 convert
+        kompose.version: 1.21.0 (992df58d8)
+    spec:
+      containers:
+      - env:
+        - name: MONGO_INITDB_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              key: MONGO_INITDB_DATABASE
+              name: {{ include "helm.fullname" . }}-server-config-env
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: {{ include "helm.fullname" . }}-db-auth
+        - name: MONGO_INITDB_ROOT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: {{ include "helm.fullname" . }}-db-auth
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: {{ .Values.mongoPod.mongoDb.image.repository }}:{{ .Values.mongoPod.mongoDb.image.tag
+          | default .Chart.AppVersion }}
+        imagePullPolicy: {{ .Values.mongoPod.mongoDb.imagePullPolicy }}
+        name: mongo-db
+        ports:
+        - containerPort: 27017
+        resources: {}
+        volumeMounts:
+        - mountPath: /var/lib/mongo/data/
+          name: mongo-data
+      restartPolicy: Always
+      volumes:
+      - name: mongo-data
+        persistentVolumeClaim:
+          claimName: {{ include "helm.fullname" . }}-mongo-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "helm.fullname" . }}-mongo-service
+  labels:
+    io.kompose.service: mongo-db
+  {{- include "helm.labels" . | nindent 4 }}
+  annotations:
+    kompose.cmd: /snap/kompose/19/kompose-linux-amd64 convert
+    kompose.version: 1.21.0 (992df58d8)
+spec:
+  type: {{ .Values.mongoService.type }}
+  selector:
+    io.kompose.service: mongo-db
+  {{- include "helm.selectorLabels" . | nindent 4 }}
+  ports:
+	{{- .Values.mongoService.ports | toYaml | nindent 2 -}}
