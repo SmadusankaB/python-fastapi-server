@@ -21,7 +21,7 @@ This is fast api project to generate thumbnail images using celery. You may repl
   - [Architecture](#Architecture)
   - [Technologies](#Technologies)
 - [TODO](#Trade-offs,-anything-you-left-out,-or-what-you-might-do-differently-if-you-had-additional-time)
-- [Improvement](#Some-discussion-of-points-that-you-would-address-if-you-had-to-fully-productionize-the-system)
+- [Improvements](#Some-discussion-of-points-that-you-would-address-if-you-had-to-fully-productionize-the-system)
 - [Troubleshooting](#Troubleshooting)
 - [Additional Tools used](#Additional-Tools-used)
 
