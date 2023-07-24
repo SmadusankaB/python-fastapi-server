@@ -17,11 +17,11 @@ This is fast api project to generate thumbnail images using celery. You may repl
     - [Load docker images](#Load-docker-images)
     - [Run using helm charts](#Run-using-helm-charts)
 - [Testing](#Testing)
-- [Reasoning behind technical choices, including architecture](#Reasoning-behind-technical-choices,-including-architecture)
+- [Technologies and architecture](#Technologies-and-architecture)
   - [Architecture](#Architecture)
   - [Technologies](#Technologies)
-- [TODO](#Trade-offs,-anything-you-left-out,-or-what-you-might-do-differently-if-you-had-additional-time)
-- [Improvements](#Some-discussion-of-points-that-you-would-address-if-you-had-to-fully-productionize-the-system)
+- [TODO](#TODO)
+- [Improvements](#improvements)
 - [Troubleshooting](#Troubleshooting)
 - [Additional Tools used](#Additional-Tools-used)
 
@@ -214,7 +214,7 @@ pip3 install -r test-requirements.txt
 pytest
 ```
 
-## Reasoning behind technical choices, including architecture
+## Technologies and architecture
 
 ### Architecture
 
