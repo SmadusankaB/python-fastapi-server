@@ -1,4 +1,4 @@
-# FastAPI server + Celery for loan running processes.
+# FastAPI server + Celery for long running processes.
 
 This is fast api project to generate thumbnail images using celery. You may replace thumbnail generator task with other long running process. 
 
