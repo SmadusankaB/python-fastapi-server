@@ -226,7 +226,7 @@ pytest
 
 - FastAPI
   
-  FastAPI supports asynchronous operations with async await syntax. So that FastApi is able to achieve assignment requirements easily. Apart from that as a framework it supports fast cording, testing, automatic documentation and data validation using pydanthic. Open API documentation great feature to validate API endpoints and functionalities quickly.
+  FastAPI supports asynchronous operations with async await syntax. So that FastApi is able to achieve async requirements easily. Apart from that as a framework it supports fast cording, testing, automatic documentation and data validation using pydanthic. Open API documentation great feature to validate API endpoints and functionalities quickly.
 
 - Celery
 
